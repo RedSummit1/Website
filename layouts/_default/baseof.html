@@ -5,24 +5,15 @@
     <title>{{.Site.Title}}</title>
   </head>
   <body>
-
     {{ partial "header.html" . }}
-
     {{block "main" .}}
-
-    <p>Sorry no content here</p>
-
+      <p>Sorry no content here</p>
     {{end}} 
-
     {{.Title}}
-
     <p>testing</p>
-
     {{.Content}}
     {{block "test" .}}
-
     <p>No content</p>
-
     {{end}}
 
     {{ partial "footer.html" .}}
