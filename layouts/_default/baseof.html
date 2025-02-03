@@ -5,10 +5,15 @@
     <title>{{.Site.Title}}</title>
   </head>
   <body>
+
     {{ partial "header.html" . }}
+
     {{block "main" .}}
-      <p>Sorry no content here</p>
+
+    <p>Sorry no content here</p>
+
     {{end}} 
+
     {{ partial "footer.html" .}}
   </body>
 

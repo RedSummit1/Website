@@ -1,3 +1,5 @@
-baseURL = ''
-languageCode = 'en-us'
-title = 'This is the site title at the moment'
+---
+baseURL: ''
+languageCode: 'en-us'
+title: 'Global Title of Site'
+---
