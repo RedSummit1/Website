@@ -1,6 +1,26 @@
 body{
-  background:grey;
-  color:black;
+  background:#000000;
+  color:white;
 }
 
+.page{
+  display:grid;
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+}
 
+.header{
+  grid-area: header;
+}
+.main{
+  grid-area: main;
+}
+.footer{
+  grid-area: footer;
+}
+
+li{
+  list-style:none;
+}
