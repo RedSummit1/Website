@@ -2,15 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>{{.Site.Title}}</title>
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/src/css/etc.css">
   </head>
   <body>
     {{ partial "header.html" . }}
-
     {{block "main" .}}
       <p>Sorry no content here</p>
     {{end}} 
-
+    <p>Testing</p>
     {{ partial "footer.html" .}}
   </body>
 </html>
