@@ -5,8 +5,6 @@ title: 'First Post'
 type: 'etc/blog'
 ---
 
-#Hello!
+Howdy readers.
 
-#### I am setting up this project to be my own personal website! 
-
-Stay tuned their is more in works, right now is the pre alpha stage!
+This is my first time adding to this so called blog, I have no strict direction for it as yet.

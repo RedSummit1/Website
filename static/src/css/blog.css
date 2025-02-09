@@ -2,25 +2,30 @@ body{
   background-color:grey;
 }
 
-li{
-  list-style:none;
-}
-
-nav ul{
-  padding:0;
-}
-
 .main__body{
   border: solid yellow 4px;
-  height:100px;
-  width:100px;
+  height:100vh;
+  width:100vw;
+  display:flex;
 }
 
-nav{
+.nav__ul{
+  padding:0;
+  list-style:none;
+  padding:0.5em;
+}
+.nav__ul li{
+  color:green;
+}
+
+.nav__body{
+  display:flex;
+  justify-content:flex-start;
   border:4px solid green;
+  border-radius:20px;
 }
 
-footer{
+.footer__body{
   border:4px solid orange;
 }
 
