@@ -1,0 +1,26 @@
+body{
+  background-color:grey;
+}
+
+li{
+  list-style:none;
+}
+
+nav ul{
+  padding:0;
+}
+
+.main__body{
+  border: solid yellow 4px;
+  height:100px;
+  width:100px;
+}
+
+nav{
+  border:4px solid green;
+}
+
+footer{
+  border:4px solid orange;
+}
+
