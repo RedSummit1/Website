@@ -3,10 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <title>{{.Site.Title}}</title>
+    <link href="/src/css/blog.css" rel="stylesheet">
   </head>
   <body>
-
     {{ partial "header.html" . }}
+
+    {{.Content}}
 
     {{block "main" .}}
       <p>Sorry no content here</p>
