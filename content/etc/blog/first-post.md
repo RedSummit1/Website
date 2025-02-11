@@ -16,3 +16,5 @@ I have seen personally that this industry is fueled by greed and explotation.
 For me its the sunken cost fallacy, but to others; college is a scam, their are so many other industries to get into where you make more and have better living conditions. 
 
 End of Rant, lets continue.
+
+Adding some more lines to this files at the moment, a commit a day keeps unemployment away!
