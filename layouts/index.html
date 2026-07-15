@@ -1,0 +1,86 @@
+{{ define "main" }}
+{{ $apiKey := os.Getenv "YOUTUBE_API_KEY" }}
+{{ $videoUrl := printf "https://www.googleapis.com/youtube/v3/search?key=%s&channelId=UCaiNMLPJFyDAXuN6_vRwEnw&part=snippet&type=video&order=date&maxResults=50" $apiKey }}
+{{ $videoRes := resources.GetRemote $videoUrl }}
+
+<div class="profile">
+  <img src="/src/images/profile.jpg" alt="Jonathan Shields" class="profile-photo">
+  <div class="profile-info">
+    <h1>Jonathan Shields</h1>
+    <p class="profile-links">
+      <a href="mailto:hello@jonathanshields.dev">Email</a> &middot;
+      <a href="/resume">Resume</a> &middot;
+      <a href="https://github.com/RedSummit1" target="_blank">GitHub</a> &middot;
+      <a href="https://www.linkedin.com/in/jonathan-shields1" target="_blank">LinkedIn</a>
+    </p>
+    <p>Software Developer and Mainframe Engineer based in Queens, NY. I work at the intersection of legacy systems and modern infrastructure — currently at The Cigna Group as a Mainframe Operator and apprenticing under Dr. Cameron Seay. I document what I learn on <a href="https://www.youtube.com/@z_for_z" target="_blank">YouTube</a>.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- Videos -->
+<section class="landing-section">
+  <div class="section-heading">
+    <h2>Videos</h2>
+    <a href="/videos">See all →</a>
+  </div>
+  {{ with $videoRes }}
+    {{ if not .Err }}
+      {{ $data := . | transform.Unmarshal }}
+      <div class="video-grid">
+        {{ range first 3 $data.items }}
+        {{ $videoId := .id.videoId }}
+        <a class="video-card" href="https://www.youtube.com/watch?v={{ $videoId }}" target="_blank" rel="noopener">
+          <img src="{{ .snippet.thumbnails.high.url }}" alt="{{ .snippet.title }}">
+          <p>{{ .snippet.title }}</p>
+        </a>
+        {{ end }}
+      </div>
+    {{ end }}
+  {{ end }}
+</section>
+
+<hr>
+
+<!-- Blog -->
+<section class="landing-section">
+  <div class="section-heading">
+    <h2>Blog</h2>
+    <a href="/blog">See all →</a>
+  </div>
+  {{ $blog := site.GetPage "blog" }}
+  {{ with $blog }}
+  <ul class="post-list">
+    {{ range first 3 .RegularPages.ByDate.Reverse }}
+    <li class="post-item">
+      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+      <span class="post-date">{{ .Date.Format "Jan 2, 2006" }}</span>
+    </li>
+    {{ end }}
+  </ul>
+  {{ end }}
+</section>
+
+<hr>
+
+<!-- Projects -->
+<section class="landing-section">
+  <div class="section-heading">
+    <h2>Projects</h2>
+    <a href="/projects">See all →</a>
+  </div>
+  {{ $projects := site.GetPage "projects" }}
+  {{ with $projects }}
+  <div class="project-grid">
+    {{ range first 3 .RegularPages.ByDate.Reverse }}
+    <a class="project-card" href="{{ .RelPermalink }}">
+      <h3>{{ .Title }}</h3>
+      <p>{{ .Params.summary }}</p>
+    </a>
+    {{ end }}
+  </div>
+  {{ end }}
+</section>
+
+{{ end }}

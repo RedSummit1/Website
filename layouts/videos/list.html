@@ -1,0 +1,48 @@
+{{ define "main" }}
+{{ $apiKey := os.Getenv "YOUTUBE_API_KEY" }}
+
+{{/* Step 1: get ordered video IDs from search */}}
+{{ $searchUrl := printf "https://www.googleapis.com/youtube/v3/search?key=%s&channelId=UCaiNMLPJFyDAXuN6_vRwEnw&part=id&type=video&order=date&maxResults=50" $apiKey }}
+{{ $searchRes := resources.GetRemote $searchUrl }}
+
+{{/* Step 2: fetch full details (snippet + contentDetails) in one call */}}
+{{ $videos := slice }}
+{{ with $searchRes }}
+  {{ if not .Err }}
+    {{ $searchData := . | transform.Unmarshal }}
+    {{ $ids := slice }}
+    {{ range $searchData.items }}
+      {{ $ids = $ids | append .id.videoId }}
+    {{ end }}
+    {{ $idStr := delimit $ids "," }}
+    {{ $detailUrl := printf "https://www.googleapis.com/youtube/v3/videos?key=%s&id=%s&part=snippet,contentDetails" $apiKey $idStr }}
+    {{ $detailRes := resources.GetRemote $detailUrl }}
+    {{ with $detailRes }}
+      {{ if not .Err }}
+        {{ $videos = (.  | transform.Unmarshal).items }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+<h1>Videos</h1>
+<div class="video-grid video-grid--list">
+  {{ range $videos }}
+  {{ $videoId := .id }}
+  {{ $raw := .contentDetails.duration }}
+  {{ $d1 := strings.Replace $raw "PT" "" 1 }}
+  {{ $d2 := strings.Replace $d1 "H" "h " 1 }}
+  {{ $d3 := strings.Replace $d2 "M" "m " 1 }}
+  {{ $dur := strings.Replace $d3 "S" "s" 1 }}
+  {{ $date := .snippet.publishedAt | time.AsTime }}
+  <a class="video-card" href="https://www.youtube.com/watch?v={{ $videoId }}" target="_blank" rel="noopener">
+    <img src="{{ .snippet.thumbnails.high.url }}" alt="{{ .snippet.title }}">
+    <div class="video-info">
+      <p class="video-title">{{ .snippet.title }}</p>
+      <p class="video-meta">{{ $date.Format "Jan 2, 2006" }} &middot; {{ $dur }}</p>
+      <p class="video-desc">{{ .snippet.description | truncate 150 }}</p>
+    </div>
+  </a>
+  {{ end }}
+</div>
+{{ end }}
