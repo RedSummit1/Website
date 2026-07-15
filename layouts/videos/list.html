@@ -29,7 +29,11 @@
 <div class="video-grid video-grid--list">
   {{ range $videos }}
   {{ $videoId := .id }}
-  {{ $dur := .contentDetails.duration | replaceRE "PT" "" | replaceRE "(\\d+)H" "$1h " | replaceRE "(\\d+)M" "$1m " | replaceRE "(\\d+)S" "$1s" }}
+  {{ $raw := .contentDetails.duration }}
+  {{ $d1 := strings.Replace $raw "PT" "" 1 }}
+  {{ $d2 := strings.Replace $d1 "H" "h " 1 }}
+  {{ $d3 := strings.Replace $d2 "M" "m " 1 }}
+  {{ $dur := strings.Replace $d3 "S" "s" 1 }}
   {{ $date := .snippet.publishedAt | time.AsTime }}
   <a class="video-card" href="https://www.youtube.com/watch?v={{ $videoId }}" target="_blank" rel="noopener">
     <img src="{{ .snippet.thumbnails.high.url }}" alt="{{ .snippet.title }}">
