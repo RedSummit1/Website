@@ -1,5 +1,8 @@
----
-baseURL: ''
+baseURL: 'https://www.jonathanshields.dev/'
 languageCode: 'en-us'
-title: 'Global Title of Site'
----
+title: 'Jonathan Shields'
+
+security:
+  http:
+    urls:
+      - ^https://www\.youtube\.com/feeds/.*
