@@ -7,7 +7,7 @@
 {{ with $res }}
   {{ if not .Err }}
     {{ $data := . | transform.Unmarshal }}
-    <div class="video-grid">
+    <div class="video-grid video-grid--list">
       {{ range $data.items }}
       {{ $videoId := .id.videoId }}
       <a class="video-card" href="https://www.youtube.com/watch?v={{ $videoId }}" target="_blank" rel="noopener">
