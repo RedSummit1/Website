@@ -46,7 +46,10 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add server to known hosts
-        run: ssh-keyscan jonathanshields.dev >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H jonathanshields.dev >> ~/.ssh/known_hosts
+
+      - name: Test SSH connection
+        run: ssh -v jonathan@jonathanshields.dev "echo SSH OK"
 
       - name: Deploy via rsync
         run: rsync -avz --delete public/ jonathan@jonathanshields.dev:/var/www/jonathanshields/
