@@ -1,0 +1,21 @@
+{{ define "main" }}
+{{ $apiKey := os.Getenv "YOUTUBE_API_KEY" }}
+{{ $url := printf "https://www.googleapis.com/youtube/v3/search?key=%s&channelId=UCaiNMLPJFyDAXuN6_vRwEnw&part=snippet&type=video&order=date&maxResults=50" $apiKey }}
+{{ $res := resources.GetRemote $url }}
+
+<h1>Videos</h1>
+{{ with $res }}
+  {{ if not .Err }}
+    {{ $data := . | transform.Unmarshal }}
+    <div class="video-grid">
+      {{ range $data.items }}
+      {{ $videoId := .id.videoId }}
+      <a class="video-card" href="https://www.youtube.com/watch?v={{ $videoId }}" target="_blank" rel="noopener">
+        <img src="{{ .snippet.thumbnails.high.url }}" alt="{{ .snippet.title }}">
+        <p>{{ .snippet.title }}</p>
+      </a>
+      {{ end }}
+    </div>
+  {{ end }}
+{{ end }}
+{{ end }}

@@ -3,6 +3,10 @@ languageCode: 'en-us'
 title: 'Jonathan Shields'
 
 security:
+  funcs:
+    getenv:
+      - ^YOUTUBE_API_KEY$
   http:
     urls:
       - ^https://www\.youtube\.com/feeds/.*
+      - ^https://www\.googleapis\.com/youtube/.*

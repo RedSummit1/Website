@@ -87,6 +87,88 @@ header > .container nav {
   }
 }
 
+/* Landing page sections */
+.landing-section {
+  margin: 1.5rem 0;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1rem;
+}
+
+.section-heading h2 {
+  margin: 0;
+}
+
+.section-heading a {
+  font-size: 0.9rem;
+  color: var(--pico-muted-color);
+}
+
+/* Blog post list */
+.post-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.post-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.post-item:last-child {
+  border-bottom: none;
+}
+
+.post-date {
+  color: var(--pico-muted-color);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+/* Project cards */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.project-card {
+  background: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: border-color 0.2s;
+}
+
+.project-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.project-card p {
+  font-size: 0.875rem;
+  color: var(--pico-muted-color);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.project-card:hover {
+  border-color: var(--pico-primary);
+  text-decoration: none;
+}
+
 /* Footer layout */
 footer > .container {
   display: flex;

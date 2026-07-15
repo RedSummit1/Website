@@ -1,5 +1,7 @@
 {{ define "main" }}
-{{ $res := resources.GetRemote "https://www.youtube.com/feeds/videos.xml?channel_id=UCaiNMLPJFyDAXuN6_vRwEnw" }}
+{{ $apiKey := os.Getenv "YOUTUBE_API_KEY" }}
+{{ $videoUrl := printf "https://www.googleapis.com/youtube/v3/search?key=%s&channelId=UCaiNMLPJFyDAXuN6_vRwEnw&part=snippet&type=video&order=date&maxResults=50" $apiKey }}
+{{ $videoRes := resources.GetRemote $videoUrl }}
 
 <div class="profile">
   <img src="/src/images/profile.jpg" alt="Jonathan Shields" class="profile-photo">
@@ -17,24 +19,68 @@
 
 <hr>
 
-{{ with $res }}
-  {{ if not .Err }}
-    {{ $data := . | transform.Unmarshal }}
-    {{ with $data.entry }}
-    <section class="videos">
-      <h2>Videos</h2>
+<!-- Videos -->
+<section class="landing-section">
+  <div class="section-heading">
+    <h2>Videos</h2>
+    <a href="/videos">See all →</a>
+  </div>
+  {{ with $videoRes }}
+    {{ if not .Err }}
+      {{ $data := . | transform.Unmarshal }}
       <div class="video-grid">
-        {{ range . }}
-        {{ $videoId := .videoId }}
+        {{ range first 3 $data.items }}
+        {{ $videoId := .id.videoId }}
         <a class="video-card" href="https://www.youtube.com/watch?v={{ $videoId }}" target="_blank" rel="noopener">
-          <img src="https://i.ytimg.com/vi/{{ $videoId }}/hqdefault.jpg" alt="{{ .title }}">
-          <p>{{ .title }}</p>
+          <img src="{{ .snippet.thumbnails.high.url }}" alt="{{ .snippet.title }}">
+          <p>{{ .snippet.title }}</p>
         </a>
         {{ end }}
       </div>
-    </section>
     {{ end }}
   {{ end }}
-{{ end }}
+</section>
+
+<hr>
+
+<!-- Blog -->
+<section class="landing-section">
+  <div class="section-heading">
+    <h2>Blog</h2>
+    <a href="/blog">See all →</a>
+  </div>
+  {{ $blog := site.GetPage "blog" }}
+  {{ with $blog }}
+  <ul class="post-list">
+    {{ range first 3 .RegularPages.ByDate.Reverse }}
+    <li class="post-item">
+      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+      <span class="post-date">{{ .Date.Format "Jan 2, 2006" }}</span>
+    </li>
+    {{ end }}
+  </ul>
+  {{ end }}
+</section>
+
+<hr>
+
+<!-- Projects -->
+<section class="landing-section">
+  <div class="section-heading">
+    <h2>Projects</h2>
+    <a href="/projects">See all →</a>
+  </div>
+  {{ $projects := site.GetPage "projects" }}
+  {{ with $projects }}
+  <div class="project-grid">
+    {{ range first 3 .RegularPages.ByDate.Reverse }}
+    <a class="project-card" href="{{ .RelPermalink }}">
+      <h3>{{ .Title }}</h3>
+      <p>{{ .Params.summary }}</p>
+    </a>
+    {{ end }}
+  </div>
+  {{ end }}
+</section>
 
 {{ end }}
