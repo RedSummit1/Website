@@ -2,12 +2,14 @@
 name: Deploy Hugo site to Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches:
       - master
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Rebuild nightly at 2am UTC to pick up new YouTube videos
+  schedule:
+    - cron: '0 2 * * *'
+
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -55,6 +57,7 @@ jobs:
           HUGO_CACHEDIR: ${{ runner.temp }}/hugo_cache
           HUGO_ENVIRONMENT: production
           TZ: America/Los_Angeles
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           hugo \
             --gc \
