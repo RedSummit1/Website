@@ -1,0 +1,73 @@
+{{ if .IsHome }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "url": "{{ .Site.BaseURL }}",
+      "name": "{{ .Site.Title }}",
+      "description": "Software Developer and Mainframe Engineer based in Queens, NY."
+    },
+    {
+      "@type": "Person",
+      "name": "Jonathan Shields",
+      "url": "{{ .Site.BaseURL }}",
+      "email": "hello@jonathanshields.dev",
+      "jobTitle": "Mainframe Operator",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "The Cigna Group"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Queens",
+        "addressRegion": "NY",
+        "addressCountry": "US"
+      },
+      "sameAs": [
+        "https://github.com/RedSummit1",
+        "https://www.linkedin.com/in/jonathan-shields1",
+        "https://www.youtube.com/@z_for_z"
+      ]
+    }
+  ]
+}
+</script>
+{{ else if eq .Type "blog" }}{{ if .IsPage }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": {{ .Title | jsonify }},
+  "datePublished": "{{ .Date.Format "2006-01-02" }}",
+  "dateModified": "{{ .Lastmod.Format "2006-01-02" }}",
+  "url": "{{ .Permalink }}",
+  "author": {
+    "@type": "Person",
+    "name": "Jonathan Shields",
+    "url": "{{ .Site.BaseURL }}"
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Jonathan Shields",
+    "url": "{{ .Site.BaseURL }}"
+  }
+}
+</script>
+{{ end }}{{ else if eq .Type "projects" }}{{ if .IsPage }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": {{ .Title | jsonify }},
+  "description": {{ .Params.summary | jsonify }},
+  "url": "{{ .Permalink }}",
+  {{ with .Params.repo }}"codeRepository": "{{ . }}",{{ end }}
+  "author": {
+    "@type": "Person",
+    "name": "Jonathan Shields"
+  }
+}
+</script>
+{{ end }}{{ end }}

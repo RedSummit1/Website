@@ -1,0 +1,23 @@
+# Jonathan Shields
+
+> Software Developer and Mainframe Engineer based in Queens, NY. Currently working as a Mainframe Operator at The Cigna Group and apprenticing under Dr. Cameron Seay at Emma Apprenticeship. I focus on mainframe technology (COBOL, JCL, HLASM), DevOps, and bridging legacy systems with modern infrastructure.
+
+## Pages
+
+- [Home](https://www.jonathanshields.dev/): Profile, recent videos, blog posts, and projects
+- [Resume](https://www.jonathanshields.dev/resume/): Full professional experience and skills
+- [Blog](https://www.jonathanshields.dev/blog/): Technical writing and personal thoughts
+- [Videos](https://www.jonathanshields.dev/videos/): YouTube tutorials on mainframe topics
+- [Projects](https://www.jonathanshields.dev/projects/): Software projects and experiments
+
+## Contact
+
+- Email: hello@jonathanshields.dev
+- GitHub: https://github.com/RedSummit1
+- LinkedIn: https://www.linkedin.com/in/jonathan-shields1
+- YouTube: https://www.youtube.com/@z_for_z
+
+## Skills
+
+Programming Languages: Python, C++, Rust, Bash, Golang, SQL, Java, COBOL, HLASM/Assembly, REXX, JCL
+Technologies: Vim, Linux, Git, Docker, Mainframe (TSO/ISPF, SDSF, z/VM), Zowe

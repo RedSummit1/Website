@@ -6,8 +6,10 @@
     <title>{{ .Site.Title }}{{ with .Title }} | {{ . }}{{ end }}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="stylesheet" href="/src/css/main.css">
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
     {{ block "extra_css" . }}{{ end }}
     <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+    {{ partial "schema.html" . }}
   </head>
   <body>
     {{ partial "header.html" . }}
