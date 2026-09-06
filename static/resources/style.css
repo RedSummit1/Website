@@ -1,0 +1,84 @@
+:root {
+  --fs-bg: #1e1e1e;
+  --fs-panel: #252526;
+  --fs-border: #3c3c3c;
+  --fs-text: #d4d4d4;
+  --fs-dim: #8a8a8a;
+  --fs-accent: #4fc1ff;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fs-bg);
+  color: var(--fs-text);
+  min-height: 100vh;
+}
+
+.fs-window {
+  max-width: 720px;
+  margin: 3rem auto;
+  border: 1px solid var(--fs-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.fs-titlebar {
+  background: var(--fs-panel);
+  border-bottom: 1px solid var(--fs-border);
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  color: var(--fs-dim);
+}
+
+.fs-titlebar a {
+  color: var(--fs-accent);
+  text-decoration: none;
+}
+
+.fs-titlebar a:hover {
+  text-decoration: underline;
+}
+
+.fs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.fs-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: var(--fs-text);
+}
+
+.fs-item:hover {
+  background: var(--fs-panel);
+}
+
+.fs-icon {
+  width: 1.2rem;
+  text-align: center;
+}
+
+.fs-name {
+  flex: 1;
+}
+
+.fs-meta {
+  color: var(--fs-dim);
+  font-size: 0.8rem;
+}
+
+.fs-empty {
+  padding: 1.5rem 1rem;
+  color: var(--fs-dim);
+  font-size: 0.85rem;
+}
