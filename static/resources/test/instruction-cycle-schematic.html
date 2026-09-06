@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instruction Cycle — Schematic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d0a;
+    --bg2: #0f120e;
+    --bone: #e8e6df;
+    --dim: #6b7268;
+    --trace: #2a2f28;
+    --signal: #00ff9c;
+    --signal-dim: #00ff9c22;
+    --heat: #ff6b4a;
+    --heat-dim: #ff6b4a22;
+    --warn: #e8c468;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: var(--bg); color: var(--bone);
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* subtle scanline + vignette texture on the whole deck */
+  .deck::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.012) 0px,
+      rgba(255,255,255,0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none;
+    z-index: 50;
+  }
+  .deck::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+    z-index: 49;
+  }
+
+  .deck { height: 100vh; width: 100vw; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    height: 100vh; width: 100vw;
+    display: none;
+    flex-direction: column;
+    padding: 7vh 7vw 6vh 7vw;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.5s cubic-bezier(.2,.7,.3,1), transform 0.5s cubic-bezier(.2,.7,.3,1);
+  }
+  .slide.active { display: flex; opacity: 1; transform: translateY(0); }
+
+  .frame-index {
+    color: var(--dim);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 2.2rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .frame-index .dot { width: 5px; height: 5px; background: var(--signal); border-radius: 50%; box-shadow: 0 0 6px var(--signal); }
+
+  h1 {
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 1.2rem 0;
+    max-width: 14ch;
+    letter-spacing: -0.01em;
+  }
+  p.lead {
+    font-size: clamp(0.92rem, 1.1vw, 1.05rem);
+    color: var(--dim);
+    max-width: 52ch;
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  /* ---------- Slide 0: register boot moment ---------- */
+  .boot-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2.2rem;
+  }
+  .boot-reg-label {
+    font-size: 0.75rem;
+    color: var(--dim);
+    letter-spacing: 0.05em;
+  }
+  .boot-clock {
+    font-size: clamp(3.2rem, 9vw, 6.5rem);
+    font-weight: 800;
+    color: var(--signal);
+    text-shadow: 0 0 24px var(--signal-dim), 0 0 60px var(--signal-dim);
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .boot-clock .cursor {
+    width: 0.5ch;
+    background: var(--signal);
+    animation: blink 1s step-end infinite;
+    align-self: stretch;
+  }
+  @keyframes blink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+  .boot-sub {
+    color: var(--dim);
+    font-size: 0.85rem;
+    max-width: 46ch;
+    line-height: 1.6;
+    border-left: 2px solid var(--trace);
+    padding-left: 1rem;
+  }
+  .boot-title {
+    position: absolute;
+    bottom: 6vh; left: 7vw;
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .boot-title span { color: var(--signal); }
+
+  /* ---------- Slide 1: bit decode ---------- */
+  .decode-body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2.6rem; }
+  .bits-row { display: flex; gap: 0.4rem; }
+  .bit {
+    width: 34px; height: 50px;
+    border: 1px solid var(--trace);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 600;
+    color: var(--dim);
+    position: relative;
+    transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  }
+  .bit.opcode.lit { color: var(--signal); border-color: var(--signal); background: var(--signal-dim); }
+  .bit.reg1.lit   { color: var(--warn); border-color: var(--warn); background: #e8c46822; }
+  .bit.reg2.lit   { color: var(--heat); border-color: var(--heat); background: var(--heat-dim); }
+  .bit-group-label {
+    font-size: 0.68rem; color: var(--dim); text-align: center; margin-top: 0.5rem; letter-spacing: 0.03em;
+  }
+  .bits-groups { display: flex; gap: 0.4rem; }
+  .bits-group { display: flex; flex-direction: column; align-items: center; }
+  .bits-group .cells { display: flex; gap: 2px; }
+
+  .decode-readout {
+    display: flex; gap: 3rem; align-items: center;
+  }
+  .readout-item { display: flex; flex-direction: column; gap: 0.35rem; }
+  .readout-item .k { font-size: 0.68rem; color: var(--dim); letter-spacing: 0.04em; }
+  .readout-item .v {
+    font-size: 1.4rem; font-weight: 700; min-height: 1.6rem;
+    transition: color 0.3s ease;
+  }
+  .readout-item.op .v { color: var(--signal); }
+  .readout-item.r1 .v { color: var(--warn); }
+  .readout-item.r2 .v { color: var(--heat); }
+  .readout-arrow { color: var(--trace); font-size: 1.4rem; }
+
+  /* ---------- Slide 2: pipeline ---------- */
+  .pipe-body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1.6rem; }
+  .pipe-grid {
+    display: grid;
+    grid-template-columns: 90px repeat(8, 1fr);
+    row-gap: 0.5rem;
+    column-gap: 0.3rem;
+    align-items: center;
+  }
+  .pipe-row-label { color: var(--dim); font-size: 0.78rem; }
+  .pipe-cell {
+    height: 34px;
+    border: 1px solid var(--trace);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.68rem; font-weight: 600;
+    color: transparent;
+    background: transparent;
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+  .pipe-cell.f { }
+  .pipe-cell.on-f { background: var(--signal-dim); border-color: var(--signal); color: var(--signal); }
+  .pipe-cell.on-d { background: #e8c46822; border-color: var(--warn); color: var(--warn); }
+  .pipe-cell.on-e { background: var(--heat-dim); border-color: var(--heat); color: var(--heat); }
+  .pipe-clock-row { display: flex; gap: 0.3rem; margin-left: 90px; }
+  .pipe-clock-cell { flex: 1; text-align: center; font-size: 0.65rem; color: var(--trace); }
+  .pipe-clock-cell.tick { color: var(--signal); }
+
+  .pipe-caption { color: var(--dim); font-size: 0.85rem; max-width: 60ch; line-height: 1.6; }
+  .pipe-caption b { color: var(--bone); font-weight: 600; }
+
+  /* ---------- Slide 3: why it matters (closing) ---------- */
+  .close-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .stat-row { display: flex; gap: 3.5rem; margin-top: 2.4rem; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; gap: 0.3rem; border-left: 2px solid var(--trace); padding-left: 1rem; }
+  .stat .num { font-size: 2rem; font-weight: 800; color: var(--signal); }
+  .stat .desc { font-size: 0.78rem; color: var(--dim); max-width: 22ch; line-height: 1.5; }
+
+  /* ---------- Controls / chrome ---------- */
+  .deck-counter {
+    position: fixed; top: 24px; right: 28px;
+    color: var(--dim); font-size: 0.7rem; z-index: 60;
+    letter-spacing: 0.03em;
+  }
+  .deck-counter b { color: var(--signal); }
+  .nav-hint {
+    position: fixed; bottom: 22px; left: 28px;
+    color: var(--dim); font-size: 0.68rem; z-index: 60;
+    letter-spacing: 0.02em;
+  }
+  .rail {
+    position: fixed; bottom: 22px; right: 28px;
+    display: flex; gap: 6px; z-index: 60;
+  }
+  .rail .seg { width: 22px; height: 3px; background: var(--trace); transition: background 0.3s ease; }
+  .rail .seg.on { background: var(--signal); box-shadow: 0 0 6px var(--signal); }
+
+  .btn {
+    background: none; border: 1px solid var(--trace);
+    color: var(--bone); font-size: 0.72rem;
+    padding: 0.55rem 1.1rem;
+    cursor: pointer; font-family: inherit;
+    transition: border-color 0.2s ease, color 0.2s ease;
+    letter-spacing: 0.02em;
+  }
+  .btn:hover { border-color: var(--signal); color: var(--signal); }
+  .run-controls { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 60; }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- SLIDE 0 — boot / hero -->
+  <div class="slide active" data-index="0">
+    <div class="frame-index"><span class="dot"></span>SYSTEM/Z REGISTER TRACE — LIVE</div>
+    <div class="boot-wrap">
+      <div>
+        <div class="boot-reg-label">PROGRAM STATUS WORD — INSTRUCTION ADDRESS</div>
+        <div class="boot-clock"><span id="boot-pc">01A2C4</span><span class="cursor"></span></div>
+      </div>
+      <div class="boot-sub">This is the address, in mainframe storage, of the next instruction the processor will run. Every HLASM statement you write is assembled into machine instructions that move through this same cycle — three stages, executed billions of times a second on IBM Z hardware.</div>
+    </div>
+    <div class="boot-title">The <span>instruction cycle</span>, for HLASM</div>
+  </div>
+
+  <!-- SLIDE 1 — decode -->
+  <div class="slide" data-index="1">
+    <div class="frame-index"><span class="dot"></span>STAGE 02 — DECODE · RR FORMAT</div>
+    <h1>An HLASM instruction is a pattern of bits</h1>
+    <p class="lead">Once assembled, <b style="color:var(--bone)">AR&nbsp;1,2</b> becomes two bytes in storage. This is the RR format — one of several z/Architecture instruction layouts — used by register-to-register instructions like AR (Add Register). Watch the fields light up as the processor reads them.</p>
+
+    <div class="decode-body">
+      <div class="bits-groups">
+        <div class="bits-group">
+          <div class="cells" id="opcode-bits"></div>
+          <div class="bit-group-label">OP CODE (BYTE 1)</div>
+        </div>
+        <div class="bits-group">
+          <div class="cells" id="reg1-bits"></div>
+          <div class="bit-group-label">R1</div>
+        </div>
+        <div class="bits-group">
+          <div class="cells" id="reg2-bits"></div>
+          <div class="bit-group-label">R2</div>
+        </div>
+      </div>
+
+      <div class="decode-readout">
+        <div class="readout-item op"><div class="k">MNEMONIC</div><div class="v" id="ro-op">—</div></div>
+        <div class="readout-arrow">→</div>
+        <div class="readout-item r1"><div class="k">FIRST OPERAND</div><div class="v" id="ro-r1">—</div></div>
+        <div class="readout-arrow">→</div>
+        <div class="readout-item r2"><div class="k">SECOND OPERAND</div><div class="v" id="ro-r2">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — pipelining -->
+  <div class="slide" data-index="2">
+    <div class="frame-index"><span class="dot"></span>STAGE 03 — THROUGHPUT</div>
+    <h1>Your mainframe overlaps the stages</h1>
+    <p class="lead">IBM Z processors don't finish one HLASM-assembled instruction before starting the next — the stages run in parallel on different instructions at once. Press <b style="color:var(--bone)">P</b> to advance the clock.</p>
+
+    <div class="pipe-body">
+      <div class="pipe-clock-row" id="pipe-clock"></div>
+      <div class="pipe-grid" id="pipe-grid"></div>
+      <div class="pipe-caption">At any given clock tick, up to <b>three different instructions</b> in your program are mid-flight — one being fetched, one decoded, one executed. This is why clock speed alone doesn't tell you throughput on real Z hardware.</div>
+    </div>
+
+    <div class="run-controls">
+      <button class="btn" id="pipe-run">▶ ADVANCE CLOCK</button>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — close -->
+  <div class="slide" data-index="3">
+    <div class="frame-index"><span class="dot"></span>SUMMARY</div>
+    <div class="close-body">
+      <h1>Three stages, endlessly repeated</h1>
+      <p class="lead">Fetch pulls the next machine instruction — the object code your HLASM source assembled into — from storage. Decode figures out the operation and operands. Execute carries it out on the Z hardware. Every AR, L, ST, or B you write becomes this loop, run at extraordinary speed.</p>
+      <div class="stat-row">
+        <div class="stat"><div class="num">~3</div><div class="desc">instructions in flight at once in a pipelined Z processor</div></div>
+        <div class="stat"><div class="num">6+</div><div class="desc">distinct instruction formats in z/Architecture (RR, RX, RS, SI, SS...)</div></div>
+        <div class="stat"><div class="num">1964</div><div class="desc">System/360, the architecture family HLASM still targets today</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="deck-counter"><b id="cur">01</b> / <span id="total">04</span></div>
+<div class="nav-hint">← → NAVIGATE</div>
+<div class="rail" id="rail"></div>
+
+<script>
+  /* ---------------- Deck navigation ---------------- */
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let cur = 0;
+
+  document.getElementById('total').textContent = String(total).padStart(2, '0');
+  const rail = document.getElementById('rail');
+  for (let i = 0; i < total; i++) {
+    const s = document.createElement('div');
+    s.className = 'seg' + (i === 0 ? ' on' : '');
+    rail.appendChild(s);
+  }
+
+  function showSlide(n) {
+    slides[cur].classList.remove('active');
+    cur = (n + total) % total;
+    slides[cur].classList.add('active');
+    document.getElementById('cur').textContent = String(cur + 1).padStart(2, '0');
+    document.querySelectorAll('.rail .seg').forEach((el, i) => el.classList.toggle('on', i === cur));
+    if (cur === 1) runDecode();
+    if (cur === 0) runBoot();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') showSlide(cur + 1);
+    if (e.key === 'ArrowLeft') showSlide(cur - 1);
+    if (e.key.toLowerCase() === 'p' && cur === 2) pipeStep();
+  });
+  let touchX = 0;
+  document.addEventListener('touchstart', e => touchX = e.touches[0].clientX);
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (dx < -40) showSlide(cur + 1);
+    if (dx > 40) showSlide(cur - 1);
+  });
+
+  /* ---------------- Slide 0: boot clock ---------------- */
+  let pcVal = 0x1000;
+  function runBoot() {
+    const el = document.getElementById('boot-pc');
+    let ticks = 0;
+    const iv = setInterval(() => {
+      pcVal += 4;
+      el.textContent = '0x' + pcVal.toString(16).padStart(8, '0').toUpperCase();
+      ticks++;
+      if (ticks > 5) clearInterval(iv);
+    }, 400);
+  }
+  runBoot();
+
+  /* ---------------- Slide 1: bit decode ---------------- */
+  const OPCODE_BITS = '00011010'; // x'1A' = AR (Add Register), byte 1 of RR format
+  const REG1_BITS = '0001';       // R1 = register 1
+  const REG2_BITS = '0010';       // R2 = register 2
+
+  function buildBits(containerId, bitStr, cls) {
+    const c = document.getElementById(containerId);
+    c.innerHTML = '';
+    for (const b of bitStr) {
+      const d = document.createElement('div');
+      d.className = 'bit ' + cls;
+      d.textContent = b;
+      c.appendChild(d);
+    }
+  }
+  buildBits('opcode-bits', OPCODE_BITS, 'opcode');
+  buildBits('reg1-bits', REG1_BITS, 'reg1');
+  buildBits('reg2-bits', REG2_BITS, 'reg2');
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  let decodeRunning = false;
+  async function runDecode() {
+    if (decodeRunning) return;
+    decodeRunning = true;
+    document.querySelectorAll('.bit').forEach(b => b.classList.remove('lit'));
+    document.getElementById('ro-op').textContent = '—';
+    document.getElementById('ro-r1').textContent = '—';
+    document.getElementById('ro-r2').textContent = '—';
+    await sleep(300);
+
+    document.querySelectorAll('#opcode-bits .bit').forEach(b => b.classList.add('lit'));
+    await sleep(500);
+    document.getElementById('ro-op').textContent = 'AR (x\'1A\')';
+    await sleep(500);
+
+    document.querySelectorAll('#reg1-bits .bit').forEach(b => b.classList.add('lit'));
+    await sleep(500);
+    document.getElementById('ro-r1').textContent = 'GR1';
+    await sleep(500);
+
+    document.querySelectorAll('#reg2-bits .bit').forEach(b => b.classList.add('lit'));
+    await sleep(500);
+    document.getElementById('ro-r2').textContent = 'GR2';
+
+    decodeRunning = false;
+  }
+
+  /* ---------------- Slide 2: pipeline grid ---------------- */
+  const PIPE_COLS = 8;
+  const PIPE_ROWS = 4; // 4 instructions in flight across time
+  const pipeGrid = document.getElementById('pipe-grid');
+  const pipeClockRow = document.getElementById('pipe-clock');
+
+  for (let t = 0; t < PIPE_COLS; t++) {
+    const cell = document.createElement('div');
+    cell.className = 'pipe-clock-cell';
+    cell.textContent = 't' + t;
+    cell.id = 'clk-' + t;
+    pipeClockRow.appendChild(cell);
+  }
+
+  // schedule: instruction i occupies F at t=i, D at t=i+1, E at t=i+2
+  function buildPipeGrid() {
+    pipeGrid.innerHTML = '';
+    for (let row = 0; row < PIPE_ROWS; row++) {
+      const label = document.createElement('div');
+      label.className = 'pipe-row-label';
+      label.textContent = 'INSTR ' + (row + 1);
+      pipeGrid.appendChild(label);
+      for (let t = 0; t < PIPE_COLS; t++) {
+        const cell = document.createElement('div');
+        cell.className = 'pipe-cell';
+        cell.id = 'p-' + row + '-' + t;
+        pipeGrid.appendChild(cell);
+      }
+    }
+  }
+  buildPipeGrid();
+
+  let pipeTick = -1;
+  function pipeStep() {
+    document.querySelectorAll('.pipe-clock-cell').forEach(c => c.classList.remove('tick'));
+    pipeTick++;
+    if (pipeTick >= PIPE_COLS) { pipeTick = -1; buildPipeGrid(); return; }
+    const clk = document.getElementById('clk-' + pipeTick);
+    if (clk) clk.classList.add('tick');
+
+    for (let row = 0; row < PIPE_ROWS; row++) {
+      const fT = row, dT = row + 1, eT = row + 2;
+      const cell = document.getElementById('p-' + row + '-' + pipeTick);
+      if (!cell) continue;
+      if (pipeTick === fT) { cell.classList.add('on-f'); cell.textContent = 'F'; }
+      else if (pipeTick === dT) { cell.classList.add('on-d'); cell.textContent = 'D'; }
+      else if (pipeTick === eT) { cell.classList.add('on-e'); cell.textContent = 'E'; }
+    }
+  }
+  document.getElementById('pipe-run').addEventListener('click', pipeStep);
+
+  /* init */
+  showSlide(0);
+</script>
+</body>
+</html>
